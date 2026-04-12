@@ -10,6 +10,7 @@ RUN mvn package -DskipTests -q
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
+COPY data/ /app/data-seed/
 RUN mkdir -p /app/data
 EXPOSE 8080
 ENTRYPOINT ["java", "-Xmx1536m", "-jar", "app.jar"]
