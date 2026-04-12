@@ -2,7 +2,7 @@ services:
   - type: web
     name: subscrub
     runtime: docker
-    plan: free
+    plan: standard
     healthCheckPath: /
     envVars:
       - key: SPRING_PROFILES_ACTIVE
@@ -32,6 +32,6 @@ services:
 
 databases:
   - name: subscrub-db
-    plan: free
+    plan: standard
     databaseName: subscrub
     user: subscrub
