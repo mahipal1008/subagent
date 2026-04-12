@@ -1,0 +1,18 @@
+intent: CATEGORY_BREAKDOWN
+version: "1.0"
+description: "Total active subscription spend grouped by category"
+sql: |
+  SELECT
+    s.category,
+    COUNT(s.id)           AS subscription_count,
+    SUM(s.current_amount) AS total_amount
+  FROM subscriptions s
+  WHERE s.user_id = :userId
+    AND s.status = 'ACTIVE'
+  GROUP BY s.category
+  ORDER BY total_amount DESC
+params:
+  - name: userId
+    type: string
+    required: true
+data_window: "Current active subscriptions"

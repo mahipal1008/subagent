@@ -1,0 +1,26 @@
+intent: SPEND_SUMMARY
+version: "1.0"
+description: "Current month subscription spend from monthly_summaries with category breakdown"
+sql: |
+  SELECT
+    ms.category,
+    COUNT(DISTINCT ms.subscription_id) AS subscription_count,
+    SUM(ms.total_amount)               AS total_amount,
+    SUM(ms.charge_count)               AS charges
+  FROM monthly_summaries ms
+  WHERE ms.user_id = :userId
+    AND YEAR(ms.summary_month) = :year
+    AND MONTH(ms.summary_month) = :month
+  GROUP BY ms.category
+  ORDER BY total_amount DESC
+params:
+  - name: userId
+    type: string
+    required: true
+  - name: year
+    type: integer
+    required: true
+  - name: month
+    type: integer
+    required: true
+data_window: "Month :month / :year"

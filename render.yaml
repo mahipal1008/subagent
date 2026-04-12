@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: subscrub
+    runtime: docker
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: GEMINI_API_KEY
+        sync: false          # set manually in Render dashboard
+      - key: PGHOST
+        fromDatabase:
+          name: subscrub-db
+          property: host
+      - key: PGPORT
+        fromDatabase:
+          name: subscrub-db
+          property: port
+      - key: PGUSER
+        fromDatabase:
+          name: subscrub-db
+          property: user
+      - key: PGPASSWORD
+        fromDatabase:
+          name: subscrub-db
+          property: password
+      - key: PGDATABASE
+        fromDatabase:
+          name: subscrub-db
+          property: database
+
+databases:
+  - name: subscrub-db
+    plan: free
+    databaseName: subscrub
+    user: subscrub

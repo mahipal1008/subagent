@@ -1,0 +1,20 @@
+intent: ANOMALY_LIST
+version: "1.0"
+description: "Subscription charges flagged as anomalies (unexpected price changes)"
+sql: |
+  SELECT
+    s.name,
+    se.date,
+    se.amount,
+    se.amount_delta,
+    se.amount_delta_pct
+  FROM subscription_events se
+  JOIN subscriptions s ON s.id = se.subscription_id
+  WHERE se.user_id = :userId
+    AND se.anomaly_flag = true
+  ORDER BY se.date DESC
+params:
+  - name: userId
+    type: string
+    required: true
+data_window: "All anomalies on record"

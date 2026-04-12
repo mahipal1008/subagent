@@ -1,0 +1,20 @@
+intent: MOST_EXPENSIVE
+version: "1.0"
+description: "Top subscriptions ranked by current cost"
+sql: |
+  SELECT
+    s.name,
+    s.current_amount,
+    s.frequency,
+    s.category,
+    s.first_seen
+  FROM subscriptions s
+  WHERE s.user_id = :userId
+    AND s.status = 'ACTIVE'
+  ORDER BY s.current_amount DESC
+  LIMIT 5
+params:
+  - name: userId
+    type: string
+    required: true
+data_window: "Top 5 most expensive active subscriptions"

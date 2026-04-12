@@ -1,0 +1,19 @@
+intent: RECENT_TRANSACTIONS
+version: "1.0"
+description: "Recent subscription-related transactions"
+sql: |
+  SELECT
+    t.date,
+    t.amount,
+    t.merchant,
+    t.channel,
+    t.description
+  FROM transactions t
+  WHERE t.user_id = :userId
+  ORDER BY t.date DESC
+  LIMIT 20
+params:
+  - name: userId
+    type: string
+    required: true
+data_window: "Last 20 transactions"

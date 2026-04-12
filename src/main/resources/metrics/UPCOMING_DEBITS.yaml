@@ -1,0 +1,24 @@
+intent: UPCOMING_DEBITS
+version: "1.0"
+description: "Shows subscriptions whose next due date falls within the next N days"
+sql: |
+  SELECT
+    s.name,
+    s.current_amount,
+    s.frequency,
+    s.next_due_date,
+    DATEDIFF(DAY, CURRENT_DATE, s.next_due_date) AS days_remaining
+  FROM subscriptions s
+  WHERE s.user_id = :userId
+    AND s.status = 'ACTIVE'
+    AND s.next_due_date BETWEEN CURRENT_DATE AND DATEADD(DAY, :daysAhead, CURRENT_DATE)
+  ORDER BY s.next_due_date ASC
+params:
+  - name: userId
+    type: string
+    required: true
+  - name: daysAhead
+    type: integer
+    required: true
+    default: 10
+data_window: "Next :daysAhead days from today"

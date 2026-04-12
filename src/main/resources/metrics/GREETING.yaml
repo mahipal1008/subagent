@@ -1,0 +1,6 @@
+intent: GREETING
+version: "1.0"
+description: "Conversational greeting or help request — no SQL needed"
+sql: null
+params: []
+data_window: null

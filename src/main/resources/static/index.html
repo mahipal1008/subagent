@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SubScrub — Talk to Your Subscriptions</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1117; --surface: #1a1d27; --surface2: #242736;
+    --border: #2e3147; --text: #e2e4ef; --muted: #7c7f9c;
+    --accent: #6c72f0; --accent-hover: #7d84f5;
+    --green: #4caf87; --red: #e05c6b; --orange: #e8974a;
+  }
+  html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
+
+  /* Header */
+  .header { background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 14px 24px; display: flex; align-items: center; gap: 12px; }
+  .logo { width: 32px; height: 32px; background: var(--accent); border-radius: 8px;
+    display: grid; place-items: center; font-size: 16px; font-weight: 700; color: #fff; }
+  .header h1 { font-size: 18px; font-weight: 700; }
+  .header span { font-size: 12px; color: var(--muted); }
+  .user-badge { margin-left: auto; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 20px; padding: 5px 14px; font-size: 12px; color: var(--muted); }
+
+  /* Layout */
+  .main { flex: 1; display: flex; overflow: hidden; }
+  .sidebar { width: 260px; background: var(--surface); border-right: 1px solid var(--border);
+    padding: 20px 16px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
+  .sidebar h2 { font-size: 11px; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+  .suggestion-btn { background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 12px; text-align: left; color: var(--text);
+    font-size: 12px; cursor: pointer; transition: border-color .15s, background .15s; }
+  .suggestion-btn:hover { border-color: var(--accent); background: #1e2036; }
+  .sidebar-divider { height: 1px; background: var(--border); margin: 12px 0; }
+  .upload-section h2 { margin-bottom: 8px; }
+  .upload-drop { border: 2px dashed var(--border); border-radius: 8px; padding: 16px;
+    text-align: center; font-size: 12px; color: var(--muted); cursor: pointer;
+    transition: border-color .15s; }
+  .upload-drop:hover, .upload-drop.drag-over { border-color: var(--accent); color: var(--text); }
+  .upload-status { font-size: 11px; color: var(--green); margin-top: 6px; }
+
+  /* Chat area */
+  .chat-wrap { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .messages { flex: 1; overflow-y: auto; padding: 24px 32px; display: flex;
+    flex-direction: column; gap: 20px; }
+  .msg { display: flex; gap: 12px; max-width: 820px; }
+  .msg.user { flex-direction: row-reverse; margin-left: auto; }
+  .msg-avatar { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+    display: grid; place-items: center; font-size: 13px; font-weight: 700; }
+  .msg.assistant .msg-avatar { background: var(--accent); color: #fff; }
+  .msg.user .msg-avatar { background: var(--surface2); border: 1px solid var(--border);
+    color: var(--muted); }
+  .msg-content { flex: 1; }
+  .msg-bubble { background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 16px; font-size: 14px; line-height: 1.65; }
+  .msg.user .msg-bubble { background: #1f2341; border-color: #2d3261; text-align: right; }
+  .msg-meta { font-size: 11px; color: var(--muted); margin-top: 6px; display: flex;
+    gap: 12px; align-items: center; }
+  .msg.user .msg-meta { justify-content: flex-end; }
+  .badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+  .badge-intent { background: #1c2157; color: #7d84f5; border: 1px solid #2d3261; }
+  .badge-conf { background: #1a2a1e; color: var(--green); border: 1px solid #2a4433; }
+  .badge-low { background: #2a1a1a; color: var(--orange); border: 1px solid #44291a; }
+
+  /* Data table */
+  .data-section { margin-top: 10px; }
+  .data-toggle { font-size: 11px; color: var(--accent); cursor: pointer;
+    background: none; border: none; padding: 2px 0; font-family: inherit; }
+  .data-toggle:hover { color: var(--accent-hover); }
+  .data-table-wrap { overflow-x: auto; margin-top: 6px; border-radius: 8px;
+    border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { background: var(--surface2); padding: 8px 12px; text-align: left;
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+    color: var(--muted); border-bottom: 1px solid var(--border); }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* SQL source */
+  .sql-toggle { font-size: 11px; color: var(--muted); cursor: pointer;
+    background: none; border: none; font-family: inherit; }
+  .sql-toggle:hover { color: var(--text); }
+  .sql-block { background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px 12px; font-family: 'Courier New', monospace; font-size: 11px;
+    color: #8fb5e8; margin-top: 6px; white-space: pre-wrap; word-break: break-word; }
+
+  /* Input bar */
+  .input-bar { background: var(--surface); border-top: 1px solid var(--border);
+    padding: 16px 24px; display: flex; gap: 10px; align-items: flex-end; }
+  .user-id-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  #userIdInput { background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 8px 10px; color: var(--text); font-size: 12px;
+    width: 100px; outline: none; }
+  #userIdInput:focus { border-color: var(--accent); }
+  .query-wrap { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+  #queryInput { background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 16px; color: var(--text); font-size: 14px;
+    resize: none; outline: none; font-family: inherit; min-height: 48px; max-height: 120px; }
+  #queryInput:focus { border-color: var(--accent); }
+  #sendBtn { background: var(--accent); color: #fff; border: none; border-radius: 10px;
+    padding: 12px 18px; font-size: 14px; cursor: pointer; font-family: inherit;
+    font-weight: 600; transition: background .15s; align-self: flex-end; min-height: 48px; }
+  #sendBtn:hover:not(:disabled) { background: var(--accent-hover); }
+  #sendBtn:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* Welcome screen */
+  .welcome { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .welcome h2 { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+  .welcome p { font-size: 14px; line-height: 1.6; max-width: 500px; margin: 0 auto 24px; }
+  .welcome-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .welcome-chip { background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 8px 16px; font-size: 13px; cursor: pointer;
+    transition: border-color .15s; }
+  .welcome-chip:hover { border-color: var(--accent); color: var(--text); }
+
+  /* Loading dot */
+  .loading-dots span { animation: blink 1.2s infinite; display: inline-block; }
+  .loading-dots span:nth-child(2) { animation-delay: .2s; }
+  .loading-dots span:nth-child(3) { animation-delay: .4s; }
+  @keyframes blink { 0%,80%,100% { opacity:.2 } 40% { opacity:1 } }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">S</div>
+  <div>
+    <h1>SubScrub</h1>
+    <span>Talk to your subscription data</span>
+  </div>
+  <div class="user-badge">🔒 Local — data stays on your device</div>
+</header>
+
+<div class="main">
+  <aside class="sidebar">
+    <h2>Try asking</h2>
+    <button class="suggestion-btn" onclick="fillQuery(this.textContent)">Show all my subscriptions</button>
+    <button class="suggestion-btn" onclick="fillQuery(this.textContent)">Which payments went up this year?</button>
+    <button class="suggestion-btn" onclick="fillQuery(this.textContent)">What auto-debits in the next 10 days?</button>
+    <button class="suggestion-btn" onclick="fillQuery(this.textContent)">How much do I spend on subscriptions per month?</button>
+    <button class="suggestion-btn" onclick="fillQuery(this.textContent)">What if I cancel Netflix and Spotify?</button>
+    <button class="suggestion-btn" onclick="fillQuery(this.textContent)">What if I cancel FitLife Gym?</button>
+
+    <div class="sidebar-divider"></div>
+    <div class="upload-section">
+      <h2>Upload transactions</h2>
+      <div class="upload-drop" id="dropZone" onclick="document.getElementById('fileInput').click()"
+           ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragleave="this.classList.remove('drag-over')">
+        📂 Click to upload CSV<br>or drag &amp; drop
+      </div>
+      <input type="file" id="fileInput" accept=".csv" class="hidden" onchange="uploadFile(this.files[0])">
+      <div class="upload-status" id="uploadStatus"></div>
+    </div>
+  </aside>
+
+  <div class="chat-wrap">
+    <div class="messages" id="messages">
+      <div class="welcome" id="welcome">
+        <h2>Ask anything about your subscriptions</h2>
+        <p>SubScrub uses AI to understand your questions and instantly queries your data — with full source transparency.</p>
+        <div class="welcome-chips">
+          <span class="welcome-chip" onclick="fillQuery(this.textContent)">Show all my subscriptions</span>
+          <span class="welcome-chip" onclick="fillQuery(this.textContent)">Which prices went up?</span>
+          <span class="welcome-chip" onclick="fillQuery(this.textContent)">Upcoming payments this week</span>
+          <span class="welcome-chip" onclick="fillQuery(this.textContent)">What if I cancel Netflix?</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-bar">
+      <div>
+        <div class="user-id-label">User ID</div>
+        <input type="text" id="userIdInput" value="demo" placeholder="demo">
+      </div>
+      <div class="query-wrap">
+        <textarea id="queryInput" rows="1" placeholder="Ask about your subscriptions…"
+                  onkeydown="handleKeyDown(event)" oninput="autoResize(this)"></textarea>
+      </div>
+      <button id="sendBtn" onclick="sendQuery()">Send</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+let msgCount = 0;
+
+async function sendQuery() {
+  const query = document.getElementById('queryInput').value.trim();
+  const userId = document.getElementById('userIdInput').value.trim() || 'demo';
+  if (!query) return;
+
+  document.getElementById('welcome').classList.add('hidden');
+  document.getElementById('queryInput').value = '';
+  autoResize(document.getElementById('queryInput'));
+  document.getElementById('sendBtn').disabled = true;
+
+  appendUserMsg(query);
+  const loadingId = appendLoadingMsg();
+
+  try {
+    const res = await fetch(`${API}/api/ask`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({query, userId})
+    });
+    const data = await res.json();
+    removeMsg(loadingId);
+    appendAssistantMsg(data);
+  } catch (err) {
+    removeMsg(loadingId);
+    appendErrorMsg('Connection error — is the server running?');
+  } finally {
+    document.getElementById('sendBtn').disabled = false;
+  }
+}
+
+function appendUserMsg(text) {
+  const id = `msg-${++msgCount}`;
+  document.getElementById('messages').insertAdjacentHTML('beforeend', `
+    <div class="msg user" id="${id}">
+      <div class="msg-avatar">U</div>
+      <div class="msg-content">
+        <div class="msg-bubble">${escHtml(text)}</div>
+      </div>
+    </div>`);
+  scrollToBottom();
+  return id;
+}
+
+function appendLoadingMsg() {
+  const id = `msg-${++msgCount}`;
+  document.getElementById('messages').insertAdjacentHTML('beforeend', `
+    <div class="msg assistant" id="${id}">
+      <div class="msg-avatar">S</div>
+      <div class="msg-content">
+        <div class="msg-bubble">
+          <span class="loading-dots"><span>●</span><span>●</span><span>●</span></span>
+        </div>
+      </div>
+    </div>`);
+  scrollToBottom();
+  return id;
+}
+
+function appendAssistantMsg(data) {
+  const id = `msg-${++msgCount}`;
+  const confBadge = data.confidence >= 0.8
+    ? `<span class="badge badge-conf">${(data.confidence * 100).toFixed(0)}% confident</span>`
+    : `<span class="badge badge-low">${(data.confidence * 100).toFixed(0)}% confident</span>`;
+
+  let tableHtml = '';
+  if (data.data && data.data.length > 0) {
+    const cols = Object.keys(data.data[0]);
+    const rows = data.data.slice(0, 20);
+    tableHtml = `
+      <div class="data-section">
+        <button class="data-toggle" onclick="toggleEl('tbl-${id}')">
+          📊 ${data.data.length} row${data.data.length > 1 ? 's' : ''} returned
+        </button>
+        <div id="tbl-${id}" class="data-table-wrap hidden">
+          <table>
+            <thead><tr>${cols.map(c => `<th>${escHtml(String(c))}</th>`).join('')}</tr></thead>
+            <tbody>${rows.map(row =>
+              `<tr>${cols.map(c => `<td>${escHtml(String(row[c] ?? ''))}</td>`).join('')}</tr>`
+            ).join('')}</tbody>
+          </table>
+        </div>
+      </div>`;
+  }
+
+  let sqlHtml = '';
+  if (data.sqlUsed) {
+    sqlHtml = `
+      <div style="margin-top:8px">
+        <button class="sql-toggle" onclick="toggleEl('sql-${id}')">🔍 View source SQL</button>
+        <div id="sql-${id}" class="sql-block hidden">${escHtml(data.sqlUsed)}</div>
+      </div>`;
+  }
+
+  const meta = data.dataWindow ? `<span>${escHtml(data.dataWindow)}</span>` : '';
+  const mv = data.metricVersion ? `<span>v${escHtml(data.metricVersion)}</span>` : '';
+
+  document.getElementById('messages').insertAdjacentHTML('beforeend', `
+    <div class="msg assistant" id="${id}">
+      <div class="msg-avatar">S</div>
+      <div class="msg-content">
+        <div class="msg-bubble">
+          ${escHtml(data.answer || data.message || 'No answer returned.')}
+          ${tableHtml}
+          ${sqlHtml}
+        </div>
+        <div class="msg-meta">
+          <span class="badge badge-intent">${escHtml(data.intent || 'UNKNOWN')}</span>
+          ${confBadge}
+          ${meta}
+          ${mv}
+        </div>
+      </div>
+    </div>`);
+  scrollToBottom();
+}
+
+function appendErrorMsg(text) {
+  const id = `msg-${++msgCount}`;
+  document.getElementById('messages').insertAdjacentHTML('beforeend', `
+    <div class="msg assistant" id="${id}">
+      <div class="msg-avatar">S</div>
+      <div class="msg-content">
+        <div class="msg-bubble" style="color:var(--red)">${escHtml(text)}</div>
+      </div>
+    </div>`);
+  scrollToBottom();
+}
+
+function removeMsg(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+function toggleEl(id) {
+  document.getElementById(id).classList.toggle('hidden');
+}
+
+function fillQuery(text) {
+  document.getElementById('queryInput').value = text;
+  document.getElementById('queryInput').focus();
+}
+
+function handleKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendQuery(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function scrollToBottom() {
+  const m = document.getElementById('messages');
+  requestAnimationFrame(() => m.scrollTop = m.scrollHeight);
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// File upload
+async function uploadFile(file) {
+  if (!file) return;
+  const userId = document.getElementById('userIdInput').value.trim() || 'demo';
+  const statusEl = document.getElementById('uploadStatus');
+  statusEl.textContent = '⏳ Uploading…';
+  statusEl.style.color = 'var(--muted)';
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('userId', userId);
+
+  try {
+    const res = await fetch(`${API}/api/upload`, {method: 'POST', body: formData});
+    const data = await res.json();
+    statusEl.textContent = `✅ ${data.message}`;
+    statusEl.style.color = 'var(--green)';
+  } catch (err) {
+    statusEl.textContent = '❌ Upload failed';
+    statusEl.style.color = 'var(--red)';
+  }
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.add('drag-over');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.name.endsWith('.csv')) uploadFile(file);
+}
+</script>
+</body>
+</html>

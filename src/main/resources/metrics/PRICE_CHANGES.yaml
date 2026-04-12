@@ -1,0 +1,28 @@
+intent: PRICE_CHANGES
+version: "1.0"
+description: "Shows subscriptions where amount increased compared to earlier in the same year"
+sql: |
+  SELECT
+    s.name,
+    s.merchant,
+    MIN(se.amount)                          AS min_amount,
+    MAX(se.amount)                          AS max_amount,
+    (MAX(se.amount) - MIN(se.amount))       AS delta,
+    ROUND(((MAX(se.amount) - MIN(se.amount))
+           / MIN(se.amount)) * 100, 2)      AS delta_pct
+  FROM subscriptions s
+  JOIN subscription_events se ON se.subscription_id = s.id
+  WHERE s.user_id = :userId
+    AND YEAR(se.date) = :year
+  GROUP BY s.id, s.name, s.merchant
+  HAVING MAX(se.amount) > MIN(se.amount)
+  ORDER BY delta_pct DESC
+params:
+  - name: userId
+    type: string
+    required: true
+  - name: year
+    type: integer
+    required: true
+    default: CURRENT_YEAR
+data_window: "Full year :year"

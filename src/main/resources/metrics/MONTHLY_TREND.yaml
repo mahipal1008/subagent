@@ -1,0 +1,18 @@
+intent: MONTHLY_TREND
+version: "1.0"
+description: "Month-over-month subscription spend trend from monthly_summaries"
+sql: |
+  SELECT
+    ms.summary_month,
+    SUM(ms.total_amount) AS total_spend,
+    SUM(ms.charge_count) AS total_charges
+  FROM monthly_summaries ms
+  WHERE ms.user_id = :userId
+  GROUP BY ms.summary_month
+  ORDER BY ms.summary_month DESC
+  LIMIT 12
+params:
+  - name: userId
+    type: string
+    required: true
+data_window: "Last 12 months"

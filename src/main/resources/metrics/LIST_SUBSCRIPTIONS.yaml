@@ -1,0 +1,20 @@
+intent: LIST_SUBSCRIPTIONS
+version: "1.0"
+description: "Lists all active subscriptions for the user with name, cost, and frequency"
+sql: |
+  SELECT
+    s.name,
+    s.current_amount,
+    s.frequency,
+    s.next_due_date,
+    s.first_seen,
+    s.status
+  FROM subscriptions s
+  WHERE s.user_id = :userId
+    AND s.status = 'ACTIVE'
+  ORDER BY s.current_amount DESC
+params:
+  - name: userId
+    type: string
+    required: true
+data_window: "Current snapshot"

@@ -1,0 +1,21 @@
+id,service_name,merchant_pattern,category,typical_amount_min,typical_amount_max,frequency,website,is_active
+1,Netflix,NETFLIX.COM/BILL,ENTERTAINMENT,149.00,799.00,MONTHLY,https://netflix.com,TRUE
+2,Spotify,SPOTIFY PREMIUM,MUSIC,59.00,179.00,MONTHLY,https://spotify.com,TRUE
+3,Amazon Prime,AMAZON PRIME*MEMBER,SHOPPING,999.00,1499.00,YEARLY,https://amazon.in/prime,TRUE
+4,Disney+ Hotstar,HOTSTAR*PREMIUM,ENTERTAINMENT,149.00,499.00,MONTHLY,https://hotstar.com,TRUE
+5,YouTube Premium,GOOGLE*YOUTUBE PREM,ENTERTAINMENT,129.00,189.00,MONTHLY,https://youtube.com/premium,TRUE
+6,FitLife Gym,FITLIFE GYM DD,FITNESS,499.00,1999.00,MONTHLY,https://fitlifegym.in,TRUE
+7,iCloud,APPLE.COM/BILL,CLOUD,75.00,749.00,MONTHLY,https://icloud.com,TRUE
+8,LinkedIn Premium,LINKEDIN*PREMIUM,PROFESSIONAL,7999.00,17999.00,YEARLY,https://linkedin.com/premium,TRUE
+9,Zomato Gold,ZOMATO*GOLD,SHOPPING,149.00,299.00,MONTHLY,https://zomato.com/gold,TRUE
+10,Audible,AUDIBLE.IN*MEMBER,MUSIC,149.00,299.00,MONTHLY,https://audible.in,TRUE
+11,Swiggy One,SWIGGY*ONE,SHOPPING,99.00,199.00,MONTHLY,https://swiggy.com,TRUE
+12,Google One,GOOGLE*STORAGE,CLOUD,130.00,650.00,MONTHLY,https://one.google.com,TRUE
+13,Apple Music,APPLE.COM/MUSIC,MUSIC,99.00,149.00,MONTHLY,https://music.apple.com,TRUE
+14,Coursera Plus,COURSERA*PLUS,PROFESSIONAL,3499.00,4999.00,MONTHLY,https://coursera.org,TRUE
+15,Cult.fit,CULTFIT*MEMBER,FITNESS,599.00,1499.00,MONTHLY,https://cult.fit,TRUE
+16,JioCinema Premium,JIOCINEMA*PREMIUM,ENTERTAINMENT,29.00,149.00,MONTHLY,https://jiocinema.com,TRUE
+17,Dropbox Plus,DROPBOX*PLUS,CLOUD,819.00,819.00,MONTHLY,https://dropbox.com,TRUE
+18,Notion Premium,NOTION*PREMIUM,PROFESSIONAL,640.00,1280.00,MONTHLY,https://notion.so,TRUE
+19,Sony LIV,SONYLIV*PREMIUM,ENTERTAINMENT,299.00,999.00,YEARLY,https://sonyliv.com,TRUE
+20,Zee5,ZEE5*PREMIUM,ENTERTAINMENT,149.00,599.00,MONTHLY,https://zee5.com,TRUE

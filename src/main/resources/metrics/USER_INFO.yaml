@@ -1,0 +1,18 @@
+intent: USER_INFO
+version: "1.0"
+description: "User profile information"
+sql: |
+  SELECT
+    u.id,
+    u.name,
+    u.email,
+    u.created_at,
+    u.last_login,
+    u.upload_count
+  FROM users u
+  WHERE u.id = :userId
+params:
+  - name: userId
+    type: string
+    required: true
+data_window: "User profile"

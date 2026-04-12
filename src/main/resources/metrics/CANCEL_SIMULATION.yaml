@@ -1,0 +1,12 @@
+intent: CANCEL_SIMULATION
+version: "1.0"
+description: >
+  Simulates cancelling one or more subscriptions and projects the savings.
+  This intent is handled entirely by SimulationEngine — no SQL template required.
+  SemanticLayer returns null for the sql field; NLQOrchestrator short-circuits to SimulationEngine.
+
+sql: null
+
+# Parameters (extracted by Gemini entity extraction, Step 2C):
+#   cancel_targets: list of service names the user wants to remove
+#                   e.g. ["Netflix", "Spotify"]
